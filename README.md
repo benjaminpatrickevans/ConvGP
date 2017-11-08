@@ -13,9 +13,9 @@ An example of an evolved architecture is shown below
 
 ![Example Tree](res/images/example-tree.png "A sample solution for the JAFFE dataset")
 
-A breakdown of the archotecture is given below, a structure is enforced using strongly typed genetic programming.
+A breakdown of the architecture is given below, a structure is enforced using strongly typed genetic programming.
 
 ![Example Architecture](res/images/tier.png "Example tree demonstranting the architecture")
 
-Future work will look at propagting gradients back through the tree, as seen with Convoultional neural networks
-as gradient descent still appears to be the most promising approach to filter/kernel weights learning.
+Future work will look at propagating gradients back through the tree, rather than evolving the filters, 
+as gradient descent still appears to be the most promising approach to filter/kernel weights learning (demonstrated with convnets).

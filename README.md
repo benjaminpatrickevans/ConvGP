@@ -17,5 +17,13 @@ A breakdown of the architecture is given below, a structure is enforced using st
 
 ![Example Architecture](res/images/tier.png "Example tree demonstranting the architecture")
 
+The proposed method overcomes some of the aforementioned problems.
+
+- The architecture is automatically evolved rather than manually crafted
+- The solution offers high interpretability, as shown with the example above
+- Work in the future will look at implementing a new fitness function which can effictevly learn from a small number of instances to overcome the need for large amounts of training data
+
 Future work will look at propagating gradients back through the tree, rather than evolving the filters, 
 as gradient descent still appears to be the most promising approach to filter/kernel weights learning (demonstrated with convnets).
+
+This work was originally written in [ECJ](https://cs.gmu.edu/~sean/papers/gecco17-ecj.pdf), I am looking to port the code over to Python for future development due to the magnitude of libraries available to assist with development (currently all code is written from scratch, i.e. image reading, convolutions etc) so the code based could be greatly reduced/improved with Python. 

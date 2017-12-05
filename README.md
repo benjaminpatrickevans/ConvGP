@@ -23,7 +23,9 @@ The proposed method overcomes some of the aforementioned problems.
 - The solution offers high interpretability, as shown with the example above
 - Work in the future will look at implementing a new fitness function which can effictevly learn from a small number of instances to overcome the need for large amounts of training data
 
-Future work will look at propagating gradients back through the tree, rather than evolving the filters, 
-as gradient descent still appears to be the most promising approach to filter/kernel weights learning (demonstrated with convnets).
+I recieved a summer scholarship working on extending this work, and the main current focus is 
 
-This work was originally written in [ECJ](https://cs.gmu.edu/~sean/papers/gecco17-ecj.pdf), and was based on some existing code from my supervisors work on [2TGP](http://www.sciencedirect.com/science/article/pii/S0957417412003867). I am looking to port the entire code based over to Python for future development due to the magnitude of libraries available to assist with development (currently all code is written from scratch, i.e. image reading, convolutions etc) so the code based could be greatly reduced/improved with Python. 
+- Update filters through gradient descent (in progress)
+
+Note:
+This work was originally written in [ECJ](https://cs.gmu.edu/~sean/papers/gecco17-ecj.pdf), and was based on some existing code from my supervisors work on [2TGP](http://www.sciencedirect.com/science/article/pii/S0957417412003867). All original code was written from scratch (i.e. image reading, convolutions etc.). The code base has since been ported to Python3, which is what you see attached here. This was done for a number of reasons, mainly the large number of available libraries which can reduce the overall code size and the improved readability.

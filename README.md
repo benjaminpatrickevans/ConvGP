@@ -14,7 +14,7 @@ predictions = gp.predict(testingX)
 
 Any questions feel free to open an issue
 
-## About:
+## About
 The key idea is to combine aspects from genetic programming and convolutional neural networks
 to overcome various limitations of ConvNets, i.e.
 
@@ -35,11 +35,11 @@ The proposed method overcomes some of the aforementioned problems.
 - The architecture is automatically evolved rather than manually crafted
 - The solution offers high interpretability, as shown with the example above
 
-## Future Work:
+## Future Work
 I recieved a summer scholarship working on extending this work, and the main current focus is 
 
 - Update filters through gradient descent (in progress)
 - Implementing a new fitness function which can effictevly learn from a small number of instances to overcome the need for large amounts of training data
 
-### Foot note:
+#### Foot note
 This work was originally written in [ECJ](https://cs.gmu.edu/~sean/papers/gecco17-ecj.pdf), and was based on some existing code from my supervisors work on [2TGP](http://www.sciencedirect.com/science/article/pii/S0957417412003867). The code base has since been ported to Python3, which is what you see attached here. This was done for a number of reasons, mainly the large number of available libraries which can reduce the overall code size (as originally code was written all from scratch) and the improved readability.

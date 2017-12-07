@@ -4,7 +4,7 @@ This was my project as part of the requirements for my Honours degree in Compute
 
 ## How to use?
 
-I set this up to feature a similar API to sklearn. The code can be ran and make predictions in only three lines
+I set this up to feature a similar API to sklearn. The model can be trained and predictions made in only three lines of code
 
 ```python
 gp = stgp.ConvGP()

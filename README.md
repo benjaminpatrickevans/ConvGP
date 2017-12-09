@@ -39,6 +39,7 @@ The proposed method overcomes some of the aforementioned problems.
 I recieved a summer scholarship working on extending this work, and the main current focus is 
 
 - Update filters through gradient descent (in progress)
+- Extend the aggregation tier to output multiple values, rather than a single value
 - Implementing a new fitness function which can effictevly learn from a small number of instances to overcome the need for large amounts of training data
 
 #### Foot note

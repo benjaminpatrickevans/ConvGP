@@ -22,11 +22,11 @@ to overcome various limitations of ConvNets, i.e.
 - Poor Interpretability. Although google brain appears to be doing some promising research in this area [here](https://distill.pub/2017/feature-visualization/), however a large limitation is still interpretability of feature interaction 
 - Require large amounts of training data
 
-An example of an evolved architecture is shown below
+The developed method uses strongly-typed genetic programming to automatically evolve trees which can be used for binary image classification. An example of an evolved tree is shown below
 
 ![Example Tree](res/images/example-tree.png "A sample solution for the JAFFE dataset")
 
-A breakdown of the architecture is given below, a structure is enforced using strongly typed genetic programming.
+A breakdown of the tree architecture is given below, the structure is enforced using strongly-typed genetic programming.
 
 ![Example Architecture](res/images/tier.png "Example tree demonstranting the architecture")
 

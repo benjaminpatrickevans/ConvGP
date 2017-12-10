@@ -1,5 +1,7 @@
 # ConvGP
 
+**THIS WHOLE PROEJCT IS IN HEAVY DEVELOPMENT. CODE IS UNFINISHED AND UNPOLISHED.**
+
 This was my project as part of the requirements for my Honours degree in Computer Science at Victoria University of Wellington. A novel method for Binary image classification.
 
 ## How to use?

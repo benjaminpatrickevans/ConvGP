@@ -59,7 +59,7 @@ def generate(pset, min_, max_, condition, type_=None):
             term = add_terminal(pset, type_)
             expr.append(term)
             
-        # Otherwise add a terminal    
+        # Otherwise add a function    
         else:
             try:
                 prim = random.choice(pset.primitives[type_])

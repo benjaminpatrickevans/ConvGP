@@ -11,7 +11,6 @@ from sklearn import metrics
 from deap import algorithms, base, creator, tools, gp
 import random, operator, math
 import matplotlib.pyplot as plt
-import cv2
 from glob import glob
 import pygraphviz as pgv
 from autograd import grad
@@ -20,17 +19,11 @@ import deapfix
 import helpers
 import evolution
 from enum import Enum
-
+import sys
+from scoop import futures
+import pickle
 
 # Custom classes for Strongly typed GP structure.
-class Image:
-    def __init__(self, pixels):
-        self.pixels = pixels
-        
-    def __str__(self):
-        return "Image("+repr(self.pixels)+")"
-    
-    __repr__ = __str__
 
 class Size:
     def __init__(self, value):
@@ -51,27 +44,9 @@ class Position:
     __repr__ = __str__
 
 
-class Filter:
-    def __init__(self, values):
-        self.values = values
-
-    def __str__(self):
-        return "Filter("+repr(self.values)+")"
-    
-    __repr__ = __str__
-
-class Filter:
-    def __init__(self, values):
-        self.values = values
-
-    def __str__(self):
-        return "Filter("+repr(self.values)+")"
-    
-    __repr__ = __str__
-
 class Shape:
 
-    allowable_shapes = ["Rectangle", "Ellipse", "Column", "Row"]
+    allowable_shapes = {"Rectangle", "Ellipse", "Column", "Row"}
 
     def __init__(self, value):
         if value not in Shape.allowable_shapes:
@@ -89,7 +64,7 @@ class ConvGP():
     """ Classifier implementing the ConvGP method. Implemented using the DEAP library. """
 
     def __init__(self, pooling_size=2, filter_size=3,
-        pop_size = 1024, generations=50, tourn_size = 7, num_best = 1, crs_rate = 0.75, mut_rate = 0.2):
+        pop_size = 1024, generations=50, tourn_size = 7, num_best = 5, crs_rate = 0.75, mut_rate = 0.2, gd_frequency=10, epochs=100, lr=0.05, extended=False):
 
         self.pooling_size = pooling_size
         self.filter_size = filter_size
@@ -100,20 +75,43 @@ class ConvGP():
         self.crs_rate = crs_rate
         self.mut_rate = mut_rate
 
+        self.gd_frequency = gd_frequency # When to run Gradient descent, 5 means every 5 epochs. Set to -1 to disable gradient descent
+
+        self.epochs = epochs
+        self.lr = lr
+        self.extended = extended # Whether or not to apply gradient descent for extended period on final generation
+
         self.pset = self.create_pset()
         self.mstats = self.create_stats()
         self.toolbox = self.create_toolbox()
 
+    # Prints out the parameters for reference
+    def print_info(self):
+        print("ConvGP Settings")
+        print("\tPooling size:", self.pooling_size)
+        print("\tFilter size:", self.filter_size)
+        print("\tPopulation size:", self.pop_size)
+        print("\tTournament size:", self.tourn_size)
+        print("\tGenerations:", self.generations)
+
+        print("\tCrossover rate:", self.crs_rate)
+        print("\tMutation rate:", self.mut_rate)
+        print("\tReproduction rate:", 1 - self.mut_rate - self.crs_rate)
+
+        print("\tGradient descent frequency:", self.gd_frequency)
+        print("\tEpochs:", self.epochs)
+        print("\tLearning Rate:", self.lr)
+
     # Chooses the appropriate class based on probability value (class[0] if > 0.5, else class 1). Defined here so can be used from outside of class in a consistent way
     def determine_class(self, value):
-        return self.classes_[0] if helpers.sigmoid(value) > 0.5 else self.classes_[1]
+        return self.classes_[0] if value > 0.5 else self.classes_[1]
 
     # Use the tree to predict class labels
     def predict_labels(self, individual, data):
         # Transform the tree expression in a callable function
         tree = self.toolbox.compile(expr=individual)
 
-        predicted_labels = [self.determine_class(tree(Image(image))) for image in data]
+        predicted_labels = [self.determine_class(helpers.sigmoid(tree(image)[0])) for image in data]
         
         return np.asarray(predicted_labels)
 
@@ -121,15 +119,9 @@ class ConvGP():
         tree = self.toolbox.compile(expr=individual)
 
         predicted_labels = []
-        for image in data:
-            out = tree(Image(image))
 
-            # DEBUGGING - Delete
-            if math.isinf(out) or math.isnan(out):
-                if not hasattr(self, 'tree'):
-                    self.tree = individual
-                print(out)
-                print(individual)
+        for image in data:
+            out = tree(image)[0]
 
             # Probability for the two classes - Since binary
             zero_probability = helpers.sigmoid(out)
@@ -138,19 +130,15 @@ class ConvGP():
         
         return np.asarray(predicted_labels)   
 
-    # How should fitness of an individual be determined? In this case use classification accuracy
-    def fitness_function(self, individual, data, real_labels):            
-        # Use the given individual to predict the class labels
-        #predicted_labels = self.predict_labels(individual, data)
+    # How should fitness of an individual be determined? In this case use classification accuracy with a penalty
+    def fitness_function(self, individual, data, real_labels):  
+        predicted_labels = self.predict_labels(individual, data)
 
         # Percentage of elementwise matches between real and predicted labels
-        #classification_accuracy = metrics.accuracy_score(real_labels, predicted_labels)
-
-        predictions = self.predict_probabilities(individual, data)
-        loss = metrics.log_loss(real_labels, predictions)
+        classification_accuracy = metrics.accuracy_score(real_labels, predicted_labels)
 
         # Deap requires multiple values be returned, so the comma is important!
-        return loss, 
+        return classification_accuracy, 
 
 
     def fit(self, trainingX, trainingY, seed = 1, verbose = True):
@@ -169,12 +157,14 @@ class ConvGP():
         # Run training process
         pop = self.toolbox.population(n=self.pop_size)
         hof = tools.HallOfFame(self.num_best)
-        pop, log = evolution.gradientEvolution(pop, self.toolbox, self.crs_rate, self.mut_rate, self.generations, stats=self.mstats, halloffame=hof, verbose=verbose)
+        pop, log = evolution.gradientEvolution(pop, self.toolbox, self.crs_rate, self.mut_rate, self.generations,
+            trainingX, trainingY, self.pset.context, self.pset.arguments, self.classes_, self.gd_frequency, self.epochs, self.lr, self.extended, stats=self.mstats, halloffame=hof, verbose=verbose)
         
         # Save the results
         self.logbook = log
+        self.hof = hof
         self.tree = hof[0]
-        self.callable_tree = self.toolbox.compile(expr=self.tree)
+
 
     def predict(self, data):
         if self.tree is None:
@@ -193,12 +183,11 @@ class ConvGP():
 
     def create_pset(self):
         # Program Takes in a single image as input. Outputs a float which is then used for classification by thresholding
-        pset = gp.PrimitiveSetTyped("MAIN", [Image], float)
+        pset = gp.PrimitiveSetTyped("MAIN", [ndarray], tuple)
 
         # Need to add the custom types, so deap is able to compile these
         pset.context["Size"] = Size
         pset.context["Position"] = Position
-        pset.context["Filter"] = Filter
         pset.context["Shape"] = Shape
 
         # ================
@@ -206,10 +195,10 @@ class ConvGP():
         # ================
 
         # Convolution Tier
-        pset.addEphemeralConstant("Filter", lambda: Filter([random.randint(-3, 3) for _ in range(self.filter_size * self.filter_size)]) , Filter)
+        pset.addEphemeralConstant("Filter", lambda: [random.uniform(-1, 1) for _ in range(self.filter_size * self.filter_size)] , list)
 
         # Aggregation tier
-        pset.addEphemeralConstant("Shape", lambda: Shape(random.choice(Shape.allowable_shapes)), Shape) # Shape of window
+        pset.addEphemeralConstant("Shape", lambda: Shape(random.choice(tuple(Shape.allowable_shapes))), Shape) # Shape of window
         
         pset.addEphemeralConstant("Size", lambda: Size(random.uniform(0.15, 0.75)), Size)
 
@@ -218,25 +207,29 @@ class ConvGP():
         # Classification Tier
         pset.addEphemeralConstant("Random", lambda: random.uniform(-1, 1), float)
 
+        # To respect half and half generation
+        pset.addEphemeralConstant("RandomTuple", lambda: (random.uniform(-1, 1), []), tuple)
+
         # ================
         # Function set
         # ================
 
         # Convolution Tier
-        pset.addPrimitive(lambda image, kernel: Image(helpers.convolve(image, kernel, self.filter_size)), [Image, Filter], Image, name="Convolution")
-        pset.addPrimitive(lambda image: Image(helpers.pooling(image, self.pooling_size)), [Image], Image, name="Pooling")
+        pset.addPrimitive(lambda image, kernel: helpers.convolve(image, kernel, self.filter_size), [ndarray, list], ndarray, name="Convolution")
+        pset.addPrimitive(lambda image: helpers.pooling(image, self.pooling_size), [ndarray], ndarray, name="Pooling")
 
-        # Aggregation Tier - The inputs correspond to: Image, Shape, X, Y, Width, Height
-        pset.addPrimitive(lambda *args: helpers.agg(np.min, *args), [Image, Shape, Position, Position, Size, Size], float, name="aggmin")
-        pset.addPrimitive(lambda *args: helpers.agg(np.mean, *args), [Image, Shape, Position, Position, Size, Size], float, name="aggmean")
-        pset.addPrimitive(lambda *args: helpers.agg(np.max, *args), [Image, Shape, Position, Position, Size, Size], float, name="aggmax")
-        pset.addPrimitive(lambda *args: helpers.agg(np.std, *args), [Image, Shape, Position, Position, Size, Size], float, name="aggstd")
+        # Aggregation Tier - The inputs correspond to: Image, Shape, X, Y, Width, Height. 
+        # The output is a pair containing the output of the aggregation function and the output stored in a list for feature construction purposes
+        pset.addPrimitive(lambda *args: helpers.agg(np.min, *args), [ndarray, Shape, Position, Position, Size, Size], tuple, name="aggmin")
+        pset.addPrimitive(lambda *args: helpers.agg(np.mean, *args), [ndarray, Shape, Position, Position, Size, Size], tuple, name="aggmean")
+        pset.addPrimitive(lambda *args: helpers.agg(np.max, *args), [ndarray, Shape, Position, Position, Size, Size], tuple, name="aggmax")
+        pset.addPrimitive(lambda *args: helpers.agg(np.std, *args), [ndarray, Shape, Position, Position, Size, Size], tuple, name="aggstd")
 
-        # Classification Tier - The basic arithmetic operators
-        pset.addPrimitive(operator.add, [float, float], float)
-        pset.addPrimitive(operator.sub, [float, float], float)
-        pset.addPrimitive(operator.mul, [float, float], float)
-        pset.addPrimitive(helpers.protectedDiv, [float, float], float, name="div")
+        # Classification Tier - The basic arithmetic operators however they need to take tuples since the features are passed through the tree
+        pset.addPrimitive(lambda x, y: helpers.arithmetic_op(operator.add, x, y), [tuple, tuple], tuple, name="add")
+        pset.addPrimitive(lambda x, y: helpers.arithmetic_op(operator.sub, x, y), [tuple, tuple], tuple, name="sub")
+        pset.addPrimitive(lambda x, y: helpers.arithmetic_op(operator.mul, x, y), [tuple, tuple], tuple, name="mul")
+        pset.addPrimitive(lambda x, y: helpers.arithmetic_op(helpers.protectedDiv, x, y), [tuple, tuple], tuple, name="div")
         
         return pset
 
@@ -262,7 +255,7 @@ class ConvGP():
 
         toolbox = base.Toolbox()
 
-        # Ramped Half and half generation (full and grow
+        # Ramped Half and half generation (full and grow)
         toolbox.register("expr", deapfix.genHalfAndHalf, pset=self.pset, min_=2, max_=5)
         toolbox.register("individual", tools.initIterate, creator.Individual, toolbox.expr)
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
@@ -278,7 +271,29 @@ class ConvGP():
         toolbox.decorate("mate", gp.staticLimit(key=operator.attrgetter("height"), max_value=10))
         toolbox.decorate("mutate", gp.staticLimit(key=operator.attrgetter("height"), max_value=10))
 
+
         return toolbox
+
+    # Used to return a list of constructed features for an image, using the best individual
+    def construct_features(self, image):
+        if self.tree is None:
+            raise Exception("You must call fit before attempting to construct features!")
+
+        callable_tree = self.to_callable(self.tree)
+
+        # 0 is output, 1 is constructed features
+        return callable_tree(image)[1]
+
+    # Convert a tree to a callable function
+    def to_callable(self, individual):
+        return self.toolbox.compile(expr=individual)
+
+    def save_logbook(self, file_name):
+        if self.logbook is None:
+            raise Exception("You must call fit before save!")
+
+        with open(file_name, 'wb') as fp:
+            pickle.dump(self.logbook, fp)
 
     #  To Plot/draw the resulting trees
     def save_tree(self, file_name):
@@ -294,9 +309,27 @@ class ConvGP():
 
         for i in nodes:
             n = g.get_node(i)
-            n.attr["label"] = labels[i]
+            label = labels[i]
+            label_type = type(label)
 
-        g.draw(path)
+            # Pretty formatting
+            if label_type in [Position, Size]:
+                # 2 decimal points
+                label = "{0:.2f}".format(label.value)
+            elif label_type == Shape:
+                label = label.value
+            elif label_type == tuple:
+                # 2DP, only first part of tuple matter (second part is constructed features)
+                label = "{0:.2f}".format(label[0])
+            elif label_type == list:
+                formatted_list = [ "{0:.2f}".format(elem) for elem in label]
+                formatted_list = np.reshape(formatted_list, (3,3))
+                label = formatted_list
+
+            n.attr["label"] = label
+
+
+        g.draw(file_name)
 
 
 

@@ -1,8 +1,6 @@
 # ConvGP
 
-**THIS WHOLE PROEJCT IS IN HEAVY DEVELOPMENT. CODE IS UNFINISHED AND UNPOLISHED.**
-
-This was my project as part of the requirements for my Honours degree in Computer Science at Victoria University of Wellington. A novel method for Binary image classification.
+This was my project as part of the requirements for my Honours degree in Computer Science at Victoria University of Wellington. A novel method for Binary image classification, utilising a memetic approach (Genetic programming combined with gradient descent)
 
 ## How to use?
 
@@ -37,12 +35,9 @@ The proposed method overcomes some of the aforementioned problems.
 - The architecture is automatically evolved rather than manually crafted
 - The solution offers high interpretability, as shown with the example above
 
-## Future Work
-I recieved a summer scholarship working on extending this work, and the main current focus is 
+Filter/kernel values are learnt through a combination of gradient descent and evolution, as gradient descent is run periodically throughout the process to optimise the values.
 
-- Update filters through gradient descent (in progress)
-- Extend the aggregation tier to output multiple values, rather than a single value
-- Implementing a new fitness function which can effictevly learn from a small number of instances to overcome the need for large amounts of training data
+Papers to come, pending publishing.
 
 #### Foot note
 This work was originally written in [ECJ](https://cs.gmu.edu/~sean/papers/gecco17-ecj.pdf), and was based on some existing code from my supervisors work on [2TGP](http://www.sciencedirect.com/science/article/pii/S0957417412003867). The code base has since been ported to Python3, which is what you see attached here. This was done for a number of reasons, mainly the large number of available libraries which can reduce the overall code size (as originally code was written all from scratch) and the improved readability.

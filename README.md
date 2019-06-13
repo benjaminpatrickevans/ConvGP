@@ -39,5 +39,28 @@ Filter/kernel values are learnt through a combination of gradient descent and ev
 
 Papers to come, pending publishing.
 
+## Citing
+
+Part of this work was published in the 2018 IEEE Congress on Evolutionary Computation (CEC). Note however this did not include the gradient descent portion, but please still cite this work
+
+https://ieeexplore.ieee.org/abstract/document/8477933
+
+BibTeX:
+```latex
+@INPROCEEDINGS{8477933, 
+author={B. {Evans} and H. {Al-Sahaf} and B. {Xue} and M. {Zhang}}, 
+booktitle={2018 IEEE Congress on Evolutionary Computation (CEC)}, 
+title={Evolutionary Deep Learning: A Genetic Programming Approach to Image Classification}, 
+year={2018}, 
+volume={}, 
+number={}, 
+pages={1-6}, 
+keywords={convolution;feedforward neural nets;genetic algorithms;handwritten character recognition;image classification;learning (artificial intelligence);medical image processing;deep learning;genetic programming approach;image classification;cell images;convolutional neural networks;CNNs;genetic programming solution;image datasets;recognising handwritten digits;medical diagnosis;Computer architecture;Feature extraction;Machine learning;Visualization;Genetic programming;Task analysis;Image recognition;Genetic programming;Image classification;Deep learning;Feature extraction}, 
+doi={10.1109/CEC.2018.8477933}, 
+ISSN={}, 
+month={July},}
+```
+
+
 #### Foot note
 This work was originally written in [ECJ](https://cs.gmu.edu/~sean/papers/gecco17-ecj.pdf), and was based on some existing code from my supervisors work on [2TGP](http://www.sciencedirect.com/science/article/pii/S0957417412003867). The code base has since been ported to Python3, which is what you see attached here. This was done for a number of reasons, mainly the large number of available libraries which can reduce the overall code size (as originally code was written all from scratch) and the improved readability.

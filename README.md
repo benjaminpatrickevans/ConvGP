@@ -41,11 +41,8 @@ Papers to come, pending publishing.
 
 ## Citing
 
-Part of this work was published in the 2018 IEEE Congress on Evolutionary Computation (CEC). Note however this did not include the gradient descent portion, but please still cite this work
+Part of this work was published in the 2018 IEEE Congress on Evolutionary Computation (CEC) at: https://ieeexplore.ieee.org/abstract/document/8477933. Which can be cited as
 
-https://ieeexplore.ieee.org/abstract/document/8477933
-
-BibTeX:
 ```latex
 @INPROCEEDINGS{8477933, 
 author={B. {Evans} and H. {Al-Sahaf} and B. {Xue} and M. {Zhang}}, 
@@ -59,6 +56,19 @@ keywords={convolution;feedforward neural nets;genetic algorithms;handwritten cha
 doi={10.1109/CEC.2018.8477933}, 
 ISSN={}, 
 month={July},}
+```
+
+The portion which incorporates gradient descent was made available online at: https://arxiv.org/abs/1909.13030 and can be cited as follows, but please cite the paper above unless it is about the gradient descent specifically
+
+```latex
+@misc{evans2019genetic,
+    title={Genetic Programming and Gradient Descent: A Memetic Approach to Binary Image Classification},
+    author={Benjamin Patrick Evans and Harith Al-Sahaf and Bing Xue and Mengjie Zhang},
+    year={2019},
+    eprint={1909.13030},
+    archivePrefix={arXiv},
+    primaryClass={cs.NE}
+}
 ```
 
 
